@@ -27,10 +27,10 @@ const importData = async () => {
     await Tour.deleteMany();
     await Tour.create(tours);
     console.log('data loaded');
-    mongoose.connection.close();
   } catch (err) {
     console.log(err);
   }
+  mongoose.connection.close();
 };
 
 importData();
