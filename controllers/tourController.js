@@ -69,13 +69,18 @@ exports.updateTour = async (req, res) => {
     });
   }
 };
-exports.deleteTour = (req, res) => {
-  // const tourId = Number(req.params.id);
-  // const tour = tours.find(tour => tour.id === tourId);
+exports.deleteTour = async (req, res) => {
+  try {
+    const tour = await Tour.findByIdAndDelete(req.params.id)
 
-  // if (!tour) {
-  //   res.status(404).json({ status: 'fail', message: 'Tour not found' });
-  // }
-
-  // res.status(204).json({ status: 'success', data: null });
+    res.status(200).json({
+      status: 'success',
+      message: "tour deleted"
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail', 
+      message: err,
+    });
+  }
 };
