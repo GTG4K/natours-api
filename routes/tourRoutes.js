@@ -13,6 +13,7 @@ tourRouter
   .get(tourController.getAllTours)
   .post(tourController.addTour);
 tourRouter.route('/stats').get(tourController.getTourStats);
+tourRouter.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 tourRouter.route('/top-5').get(middlewareTop5, tourController.getAllTours);
 tourRouter
   .route('/:id')
