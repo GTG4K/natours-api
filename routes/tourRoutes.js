@@ -12,6 +12,7 @@ tourRouter
   .route('/')
   .get(tourController.getAllTours)
   .post(tourController.addTour);
+tourRouter.route('/stats').get(tourController.getTourStats);
 tourRouter.route('/top-5').get(middlewareTop5, tourController.getAllTours);
 tourRouter
   .route('/:id')
