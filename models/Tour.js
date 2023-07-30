@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const validator = require('validator');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -7,6 +8,8 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Tour name is required'],
       unique: true,
+      maxlength: [40, 'Tour name can not be longer than 40 characters'],
+      minlength: [5, 'Tour name can not be shorter than 5 characters'],
     },
     slug: String,
     duration: {
@@ -20,6 +23,10 @@ const tourSchema = new mongoose.Schema(
     difficulty: {
       type: String,
       required: [true, 'Tour difficulty is required'],
+      enum: {
+        values: ['easy', 'medium', 'difficult'],
+        message: 'Difficulty should be easy, medium or difficult',
+      },
     },
     ratingsAverage: {
       type: Number,
@@ -32,8 +39,17 @@ const tourSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: [true, 'Tour price is required'],
+      min: [50, 'Price must be at least 50$'],
     },
-    priceDiscount: Number,
+    priceDiscount: {
+      type: Number,
+      validate: {
+        validator: function (value) {
+          return val < this.price;
+        },
+        message: 'Price discount ({VALUE}) can not be higher than the price',
+      },
+    },
     summary: {
       type: String,
       required: [true, 'Tour summary is required'],
@@ -54,6 +70,10 @@ const tourSchema = new mongoose.Schema(
       select: false,
     },
     startDates: [Date],
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -68,6 +88,18 @@ tourSchema.virtual('durationWeeks').get(function () {
 // DOCUMENT MIDDLEWARE: runs before .save() and .create()
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true, remove: '.' });
+  next();
+});
+
+// QUERY MIDDLEWARE: runs before .find()
+tourSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } });
+  next();
+});
+
+// AGGREGATION MIDDLEWARE: runs before .aggregate()
+tourSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
   next();
 });
 
